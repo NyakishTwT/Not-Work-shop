@@ -1,0 +1,10 @@
+[project]
+name = "testdocker"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.110.0",
+    "psycopg[binary]>=3.1.0",
+    "pydantic-settings>=2.0.0",
+    "uvicorn[standard]>=0.28.0",
+]
