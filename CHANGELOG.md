@@ -10,3 +10,9 @@ All notable changes to this project will be documented in this file
 - Настройка контейнеризации через Dockerfile и compose.yaml
 - Автоматический CI/CD
 - Healthcheck эндпоинт `/health`
+
+## [1.0.1] -2026-26-26-26-26-67
+
+### Added
+
+Добавлено новое поле /health
