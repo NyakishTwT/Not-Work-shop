@@ -1,74 +1,59 @@
-# 📒 guestbook — стартовый репозиторий воркшопа
+# 📒 Guestbook Service
 
-Небольшая **гостевая книга** на FastAPI: можно оставить сообщение и посмотреть все оставленные. Данные хранятся в PostgreSQL.
+Production-ready микросервис гостевой книги на FastAPI и PostgreSQL с автоматизированным CI/CD конвейером и поддержкой версионированных релизов.
 
-## Что умеет
+## 🚀 Стек технологий
 
-- `GET /` — приветствие
-- `GET /health` — проверка «жив ли сервис»
-- `GET /messages` — список сообщений (новые сверху)
-- `POST /messages` — добавить сообщение: тело `{"author": "...", "text": "..."}`
+- **Язык & Рантайм:** Python 3.12, управление зависимостями через [uv](https://github.com/astral-sh/uv)
+- **Фреймворк:** FastAPI + Uvicorn
+- **База данных:** PostgreSQL 16 (драйвер `psycopg 3`)
+- **Конфигурация:** `pydantic-settings` (12-Factor App)
+- **Контейнеризация:** Docker, Docker Compose
+- **CI/CD:** GitHub Actions, линтинг (Ruff), тесты (Pytest), реестр образов (GHCR)
 
-## Текущее состояние: «работает у меня»
+---
 
-Честно предупреждаем: сейчас проект заводится только у автора и только если звёзды сошлись. А именно:
+## 🛠 Быстрый старт
 
-- зависимости лежат в `requirements.txt` и никак не зафиксированы;
-- адрес базы и **пароль зашиты прямо в `main.py`**;
-- нет ни `Dockerfile`, ни `compose.yaml` — базу нужно поднимать и настраивать руками;
-- нет `.gitignore`, нет `.env`.
-
-Вот как автор запускает это у себя (и почему так оставлять нельзя):
+### 1. Клонирование и настройка окружения
 
 ```bash
-pip install -r requirements.txt
-# ... где-то локально поднят PostgreSQL с базой guestbook и тем самым паролем из кода ...
-uvicorn main:app
+git clone https://github.com/NyakishTwT/Not-Work-shop.git
+cd Not-Work-shop
+cp .env.example .env
 ```
 
-## 🎯 Ваша задача
-
-**Нужно получить** тот же проект, доведённый до прода:
-
-- зависимости зафиксированы через **uv** (`pyproject.toml` + `uv.lock`), версия Python закреплена;
-- есть **Dockerfile** и **.dockerignore**, образ собирается;
-- есть **compose.yaml**, поднимающий приложение **и** PostgreSQL одной командой, с правильным порядком запуска и хранением данных;
-- настройки собраны в один конфиг на **pydantic-settings**, в коде нет `os.environ` вразнобой;
-- **секретов нет ни в коде, ни в коммите**: они живут в `.env` (в `.gitignore`), а в репозитории лежит `.env.example`.
-
-**Бизнес-логику менять не нужно** (эндпоинты и SQL уже работают) — вы работаете с упаковкой, конфигурацией и запуском.
-
-## 🚀 Как начать
-
-1. Форкните репозиторий воркшопа к себе (кнопка **Fork**).
-2. Склонируйте форк и заведите рабочую ветку:
+### 2. Запуск через Docker Compose (локально)
 
 ```bash
-git clone https://github.com/ВАШ-ЛОГИН/guestbook-workshop.git
-cd guestbook-workshop
-git switch -c to-prod
+docker compose up -d --build
 ```
 
-3. Выполнить задание, сверяясь с критериями.
+Сервис будет доступен по адресу: `http://localhost:8000`
 
-## ✅ Критерии готовности
+---
 
-- [ ] Зависимости на **uv**: есть `pyproject.toml` и `uv.lock`, `requirements.txt` удалён, версия Python закреплена (`.python-version`)
-- [ ] Есть **`.gitignore`** с `.venv`, `.env`, `__pycache__`
-- [ ] Настройки собраны в **`config.py`** (pydantic-settings); в `main.py` нет зашитых адреса и пароля
-- [ ] Секретов нет ни в коде, ни в коммите: `.env` в `.gitignore`, в репозитории есть **`.env.example`**, в `compose.yaml` пароль через **`${...}`**
-- [ ] Есть **`Dockerfile`** (зависимости ставятся до кода, `--host 0.0.0.0`) и **`.dockerignore`** (без `.env`, `.git`, `.venv`)
-- [ ] **`compose.yaml`** поднимает `app` + `db`; наружу проброшен только `app`; есть `depends_on: service_healthy`, `healthcheck` и `volume`
-- [ ] **Приёмочный тест пройден:** сообщение добавляется, отображается и переживает `down`/`up`
-- [ ] `git grep -i supersecret` не находит ничего; работа влита в `main` через merge
+## 📡 API Эндпоинты
 
-## 🏁 Как завершить
+- `GET /` — приветственное сообщение (настраивается через `GREETING`)
+- `GET /health` — проверка работоспособности сервиса (healthcheck)
+- `GET /messages` — получить список всех сообщений
+- `POST /messages` — добавить сообщение (JSON: `{"author": "string", "text": "string"}`)
 
-```bash
-git add .
-git commit -m "chore: гостевая книга доведена до прода (uv, Docker, Compose, конфиг)"
-git switch main
-git merge to-prod
-git push -u origin main
-```
+---
 
+## 🔄 CI/CD и релизы
+
+В проекте настроен автоматический конвейер (GitHub Actions):
+
+1. **CI (`check`):** При каждом `push` и `pull_request` запускаются линтер `ruff` и тесты `pytest`.
+2. **CD (`build-and-push`):**
+   - При пуше в ветку `main` собирается и публикуется образ с тегом `:latest`.
+   - При пуше Git-тега по SemVer (`vX.Y.Z`) собирается версионированный образ в GitHub Container Registry (`ghcr.io`).
+
+---
+
+## 📖 Эксплуатация и документация
+
+- [RUNBOOK.md](./RUNBOOK.md) — аварийные инструкции, мониторинг и регламент отката (Rollback).
+- [CHANGELOG.md](./CHANGELOG.md) — история версий и изменений проекта.
